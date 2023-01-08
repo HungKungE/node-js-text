@@ -1,34 +1,60 @@
 "use strict";
 
-class UserStorage {
-    static #users = {
-        id: ["a", "b", "c"],
-        psword: ["1", "2", "3"],
-    };
+const fs = require("fs").promises;
 
-    // ...변수명 : 인자 여러 개를 받을 수 있다
-    static getUsers(...params) {
-        const users = this.#users;
-        const newUsers = params.reduce((newUsers, params)=>{
-            if(users.hasOwnProperty(params)){
-                newUsers[params] = users[params];
+class UserStorage {
+    static #getUserInfo(data, id) {
+        return fs.readFile("./src/db/users/users.json")
+        .then((data) => {
+            const users = JSON.parse (data);
+            const idx = users.id.indexOf(id);
+            const userKeys = Object.keys(users); // => {id, psword, name}
+            const userInfo = userKeys.reduce((newUser, info)=> {
+                newUser[info] = users[info][idx];
+                return newUser;
+            }, {});
+            console.log(userInfo);
+            return userInfo;
+        }).catch(console.error);
+    }
+
+    static #getUsers(data, isAll,params){
+        const users= JSON.parse(data);
+        if(isAll) return users;
+        const newUsers = params.reduce((newUsers, param)=>{
+            if(users.hasOwnProperty(param)){
+                newUsers[param] = users[param];
             }
             return newUsers;
         }, {});
-        console.log(newUsers);
         return newUsers;
     }
 
-    static getUserInfo(id) {
-        const users = this.#users;
-        const idx = users.id.indexOf(id);
-        const userKeys = Object.keys(users);
-        const userInfo = userKeys.reduce((newUser, info)=> {
-            newUser[info] = users[info][idx];
-            return newUser;
-        }, {});
+    // ...변수명 : 인자 여러 개를 받을 수 있다
+    static getUsers(isAll, ...params) {
+        return fs.readFile("./src/db/users/users.json")
+        .then((data) => {
+            return this.#getUsers(data, isAll,params);
+        }).catch(console.error);
+    }
 
-        return userInfo;
+    static getUserInfo(id) {
+        return fs.readFile("./src/db/users/users.json")
+        .then((data) => {
+            return this.#getUserInfo(data, id);
+        }).catch(console.error);;
+    }
+
+    static async save(userInfo) {
+        const users = await this.getUsers(true);
+        if(users.id.includes(userInfo.id)){
+            throw "이미 존재하는 ID";
+        }
+        users.id?.push(userInfo.id);
+        users.name?.push(userInfo.name);
+        users.psword?.push(userInfo.psword);
+        fs.writeFile("./src/db/users/users.json", JSON.stringify(users));
+        return { success : true };
     }
 }
 

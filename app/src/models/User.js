@@ -8,19 +8,29 @@ class User{
         this.body = body;
     }
 
-    login(){
-        const body = this.body;
+    async login(){
+        const client = this.body;
 
-        const {id, psword} = UserStorage.getUserInfo(body.id);
+        const {id, psword} = await UserStorage.getUserInfo(client.id);
 
         if(id){
-            if (id === body.id && psword === body.psword){
+            if (id === client.id && psword === client.psword){
                 return { success : true }; 
             }
             return { success : false, msg: "wrong psword!"};
         }
 
         return { success : false, msg: "wrong Id!"};
+    }
+
+    async register(){
+        const client = this.body;
+        try{
+            const response = await UserStorage.save(client);
+            return response;
+        } catch(err) {
+            return {success: false, msg: err};
+        }
     }
 };
 

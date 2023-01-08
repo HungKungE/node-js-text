@@ -2,7 +2,7 @@
 
 const id = document.querySelector("#id"),
     psword = document.querySelector("#psword"),
-    loginBtn = document.querySelector("button");
+    loginBtn = document.querySelector("#button");
 
 const login = () => {
     const req = {
@@ -30,6 +30,3 @@ const login = () => {
 }
 
 loginBtn.addEventListener("click", login);
-
-console.log(id);
-console.log("hello");
